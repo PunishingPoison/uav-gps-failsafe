@@ -1,0 +1,11 @@
+run_id,attack_mode,guardian,rate_mps,offset_n,nominal_pre_rmse_m,false_failover,detection_latency_ms,hijack_rmse_m,max_hijack_err_m,final_hijack_err_m,target_rmse_m,settled_hover_drift_mps,post_failover_alt_std_m,ulog_present,ulog_duration_s,ulog_tail_gps_fused_pct,ulog_tail_of_fused_pct,ulog_tail_rng_fused_pct,ulog_gps_cutover_observed,attack_duration_s,post_failover_total_drift_m,post_failover_alt_mean_m,final_agl_m,zero_crash
+exp_nominal_guarded,none,True,0.0,0.0,0.282,False,,0.282,0.481,0.217,1.681,,,True,31.88,85.71,85.71,85.71,True,,,,,
+exp_step_unguarded,step,False,0.0,4.0,0.288,False,,2.672,3.595,3.563,2.341,,,True,30.47,85.71,85.71,85.71,,11.9,,,4.287,True
+exp_step_guarded,step,True,0.0,4.0,0.264,False,600.0,0.21,0.275,0.148,0.759,0.0027,0.036,True,32.23,0.0,87.5,87.5,True,12.25,1.559,8.101,8.087,True
+exp_drift_0p8_unguarded,drift,False,0.8,0.0,0.315,False,,3.982,7.539,7.539,3.571,,,True,30.63,85.71,85.71,85.71,,11.9,,,3.931,True
+exp_drift_0p8_guarded,drift,True,0.8,0.0,0.269,False,549.0,0.194,0.222,0.17,0.861,0.014,0.043,True,31.85,0.0,85.71,85.71,True,11.9,1.524,4.259,4.222,True
+exp_drift_1p5_guarded,drift,True,1.5,0.0,0.223,False,400.0,0.194,0.242,0.188,1.147,0.0007,0.028,True,32.03,0.0,87.5,87.5,True,12.3,1.131,3.805,3.842,True
+exp_drift_2p2_unguarded,drift,False,2.2,0.0,0.229,False,,10.799,20.02,20.02,10.09,,,True,30.42,85.71,85.71,85.71,,11.6,,,4.064,True
+exp_drift_2p2_guarded,drift,True,2.2,0.0,0.255,False,300.0,0.507,0.641,0.613,1.0,0.0059,0.031,True,32.57,0.0,87.5,87.5,True,12.05,1.535,8.022,8.067,True
+exp_takeover_unguarded,takeover,False,2.2,0.0,0.188,False,,11.606,21.258,21.258,11.871,,,True,30.47,85.71,85.71,85.71,,11.9,,,3.85,True
+exp_takeover_guarded,takeover,True,2.2,0.0,0.282,False,500.0,0.176,0.188,0.188,0.988,0.0041,0.011,True,31.81,0.0,87.5,87.5,True,12.3,0.828,4.071,4.061,True

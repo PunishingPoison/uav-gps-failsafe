@@ -75,6 +75,18 @@ docker exec -it uav_gps_failsafe_sim bash -c '
 ```
 While running `mission_runner_node` + `adversary_spoofer_node` in parallel terminals, the Guardian cuts `EKF2_GPS_CTRL=0`, sets `EKF2_HGT_REF=2`, and engages `AUTO.LOITER` GPS-denied hover automatically.
 
+6. **Run full automated ablation suite & generate paper figures (Phase 6):**
+```bash
+python3 analysis/run_experiments.py
+docker run --rm -v "$PWD:/uav_ws" uav-gps-failsafe:jazzy bash -c '
+  python3 /uav_ws/analysis/evaluate_experiments.py && python3 /uav_ws/analysis/plot_paper_figures.py
+'
+```
+7. **Split-screen live demo (Gazebo Harmonic + optional QGroundControl + live telemetry monitor):**
+```bash
+./scripts/run_demo.sh --mode drift --rate 2.0 --guardian on --qgc
+```
+
 ## Roadmap Progress
 
 - [x] **Phase 1:** Dockerized PX4 SITL (`v1.15.4`), Gazebo Harmonic, ROS 2 Jazzy, `px4_msgs`, and workspace setup
@@ -82,4 +94,4 @@ While running `mission_runner_node` + `adversary_spoofer_node` in parallel termi
 - [x] **Phase 3:** `mission_runner_node` + `adversary_spoofer_node` (`step`, `drift`, `takeover`) verified visually in Gazebo GUI (`fused: True`)
 - [x] **Phase 4:** `telemetry_logger_node`, 24-feature sliding-window `feature_extractor`, 16-episode dataset, RF (`F1=0.9426`, `AUC=0.9879`) & XGBoost (`F1=0.9369`, `AUC=0.9885`) trained and evaluated
 - [x] **Phase 5:** Real-time `guardian_ai_node` automated MAVLink failover (`EKF2_GPS_CTRL=0`, `AUTO.LOITER`) verified with zero nominal false triggers across `step`, `drift`, and `takeover`
-- [ ] **Phase 6:** Automated ablation experiments & publication-grade paper figures
+- [x] **Phase 6:** Paired Unguarded vs. AI Guardian evaluation (`pyulog` + CSV), 300-DPI paper figures (`analysis/figures/`), and `scripts/run_demo.sh` live split-screen launcher
