@@ -9,12 +9,12 @@ RATE="2.0"
 BEARING="45.0"
 OFFSET_N="4.0"
 OFFSET_E="0.0"
-GUARDIAN="on"
+GUARDIAN="both"
 MODEL="rf"
 TRIGGER_WP="4"
 LEG_DELAY="1.5"
 PRE_S="0"
-DEMO_S="24"
+DEMO_S="12"
 HEADLESS=0
 LAUNCH_QGC=0
 KEEP_SIM=0
@@ -43,12 +43,12 @@ Usage: $0 [options]
   --bearing <deg>                Spoofing bearing (default: 45.0)
   --offset-n <m>                 Step North offset (default: 4.0)
   --offset-e <m>                 Step East offset (default: 0.0)
-  --guardian <on|off>            Enable AI Guardian auto-recovery (default: on)
+  --guardian <both|off|on>       Safe navigation mode sequence (default: both = OFF then ON)
   --model <rf|xgb>               Classifier (default: rf)
   --trigger-wp <1..5|0>          Trigger attack on mission leg (default: 4 = heading to Bottom-Left; 0 = use --pre-s)
   --leg-delay <sec>              Delay after entering trigger leg before spoof starts (default: 1.5)
   --pre-s <sec>                  Timed nominal flight if >0 or --trigger-wp 0 (default: 0)
-  --demo-s <sec>                 Post-attack observation window (default: 24)
+  --demo-s <sec>                 Post-attack observation window per run (default: 12)
   --qgc                          Launch QGroundControl alongside Gazebo GUI
   --headless                     Run Gazebo & HUD without GUI windows
   --keep                         Keep simulation container alive after demo ends
@@ -73,13 +73,6 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-echo "[DEMO] Launching PX4 SITL + Gazebo Harmonic (headless=${HEADLESS})..."
-if [[ "$HEADLESS" -eq 1 ]]; then
-  "${SCRIPT_DIR}/run_simulation.sh" --headless --detach
-else
-  "${SCRIPT_DIR}/run_simulation.sh" --detach
-fi
-
 if [[ "$LAUNCH_QGC" -eq 1 ]]; then
   if [[ -x "/home/vcmr/Downloads/squashfs-root/AppRun" ]]; then
     /home/vcmr/Downloads/squashfs-root/AppRun >/tmp/qgc_demo.log 2>&1 &
@@ -94,7 +87,24 @@ if [[ "$LAUNCH_QGC" -eq 1 ]]; then
   fi
 fi
 
-docker exec uav_gps_failsafe_sim bash -c "
+run_demo_stage() {
+  local stage_guardian="$1"
+  local stage_label="$2"
+  local keep_after="$3"
+
+  echo ""
+  echo "========================================================================"
+  echo "[DEMO] ${stage_label}"
+  echo "[DEMO] Launching clean PX4 SITL + Gazebo Harmonic (headless=${HEADLESS})..."
+  echo "========================================================================"
+  "${SCRIPT_DIR}/run_simulation.sh" --stop >/dev/null 2>&1 || true
+  if [[ "$HEADLESS" -eq 1 ]]; then
+    "${SCRIPT_DIR}/run_simulation.sh" --headless --detach
+  else
+    "${SCRIPT_DIR}/run_simulation.sh" --detach
+  fi
+
+  docker exec uav_gps_failsafe_sim bash -c "
 set -e
 source /opt/ros/jazzy/setup.bash
 source /uav_ws/ros2_ws/install/setup.bash
@@ -112,7 +122,8 @@ RATE = '${RATE}'
 BEARING = '${BEARING}'
 OFFSET_N = '${OFFSET_N}'
 OFFSET_E = '${OFFSET_E}'
-GUARDIAN = '${GUARDIAN}' == 'on'
+GUARDIAN = '${stage_guardian}' == 'on'
+STAGE_LABEL = '${stage_label}'
 MODEL = '${MODEL}'
 TRIGGER_WP = int('${TRIGGER_WP}')
 LEG_DELAY = float('${LEG_DELAY}')
@@ -146,12 +157,12 @@ def spin_for(sec):
     while time.monotonic() - t0 < sec:
         rclpy.spin_once(node, timeout_sec=0.05)
 
-hud_args = [HUD_BIN] + (['--no-window'] if HEADLESS else [])
+hud_args = [HUD_BIN, '--stage-label', STAGE_LABEL] + (['--no-window'] if HEADLESS else [])
 hproc = subprocess.Popen(hud_args, preexec_fn=os.setsid)
 gproc = subprocess.Popen([GUARDIAN_BIN, '--model', MODEL], preexec_fn=os.setsid) if GUARDIAN else None
 mproc = subprocess.Popen([MISSION_BIN, '--pattern', 'square', '--size', '12.0', '--altitude', '4.0', '--speed', '2.0', '--loops', '4', '--no-land'], preexec_fn=os.setsid)
 
-print('[DEMO] Waiting for takeoff & mission start...', flush=True)
+print(f'[{STAGE_LABEL}] Waiting for takeoff & mission start...', flush=True)
 t0 = time.monotonic()
 while time.monotonic() - t0 < 40.0:
     spin_for(0.2)
@@ -168,7 +179,7 @@ WP_LABELS = {
 }
 
 if TRIGGER_WP > 0 and PRE_S <= 0:
-    print(f'[DEMO] Phase 1 - Flying nominal square path until Leg {TRIGGER_WP} ({WP_LABELS.get(TRIGGER_WP, "")})...', flush=True)
+    print(f'[DEMO] Phase 1 - Flying nominal square path until Leg {TRIGGER_WP} ({WP_LABELS.get(TRIGGER_WP, \"\")})...', flush=True)
     t_wait0 = time.monotonic()
     last_wp = -1
     next_print = time.monotonic()
@@ -205,7 +216,7 @@ else:
             prob = g.get('spoof_prob') if g else 0.0
             print(f'[NOMINAL] Mode=OFFBOARD | P(spoof)={prob:.3f} | GPS={fl.cs_gps if fl else None} OF={fl.cs_opt_flow if fl else None} LiDAR={fl.cs_rng_hgt if fl else None} | HijackErr={err:.2f}m', flush=True)
 
-print(f'\\n[DEMO] Phase 2 - SPOOF SIGNAL TRANSMITTED from Rogue Ground TX (-8,+8): mode={MODE}, rate={RATE} m/s, bearing={BEARING} deg <<<', flush=True)
+print(f'\\\\n[DEMO] Phase 2 - SPOOF SIGNAL TRANSMITTED from Rogue Ground TX (-8,+8): mode={MODE}, rate={RATE} m/s, bearing={BEARING} deg <<<', flush=True)
 aproc = subprocess.Popen([ADV_BIN, '--mode', MODE, '--rate-mps', RATE, '--bearing-deg', BEARING, '--offset-n', OFFSET_N, '--offset-e', OFFSET_E], preexec_fn=os.setsid)
 
 t_end = time.monotonic() + DEMO_S
@@ -218,8 +229,8 @@ while time.monotonic() < t_end:
         announced_fo = True
         p_det = g.get('spoof_prob', 0.0)
         ex_ms = g.get('failover_exec_ms', 0.0)
-        print(f'\\n[DEMO] Phase 3 - AI GUARDIAN TRIGGERED (P={p_det:.3f} >= 0.80)! Reason: GPS diverges from Optical Flow + IMU!', flush=True)
-        print(f'[DEMO]           -> Disabled GPS (EKF2_GPS_CTRL=0) in {ex_ms}ms & locked SAFE HOLD (AUTO.LOITER) on OF+LiDAR.\\n', flush=True)
+        print(f'\\\\n[DEMO] Phase 3 - AI GUARDIAN TRIGGERED (P={p_det:.3f} >= 0.80)! Reason: GPS diverges from Optical Flow + IMU!', flush=True)
+        print(f'[DEMO]           -> Disabled GPS (EKF2_GPS_CTRL=0) in {ex_ms}ms & locked SAFE HOLD (AUTO.LOITER) on OF+LiDAR.\\\\n', flush=True)
     if time.monotonic() >= next_print and st['lp'] and st['gt']:
         next_print += 1.5
         lp, gt, fl, vs = st['lp'], st['gt'], st['fl'], st['vs']
@@ -232,6 +243,30 @@ while time.monotonic() < t_end:
 
 kill_proc(aproc); kill_proc(mproc); kill_proc(gproc); kill_proc(hproc)
 rclpy.shutdown()
-print('[DEMO] Finished cleanly.', flush=True)
+print(f'[DEMO] {STAGE_LABEL} finished cleanly.', flush=True)
 PY
 "
+  if [[ "$keep_after" -eq 0 ]]; then
+    "${SCRIPT_DIR}/run_simulation.sh" --stop >/dev/null 2>&1 || true
+  fi
+}
+
+case "${GUARDIAN}" in
+  both)
+    run_demo_stage "off" "1/2 SAFE NAV OFF" 0
+    echo ""
+    echo "[DEMO] Safe Navigation OFF demonstrated trajectory hijack -> resetting simulation for Safe Navigation ON..."
+    sleep 2
+    run_demo_stage "on" "2/2 SAFE NAV ON" "${KEEP_SIM}"
+    ;;
+  off)
+    run_demo_stage "off" "SAFE NAV OFF" "${KEEP_SIM}"
+    ;;
+  on)
+    run_demo_stage "on" "SAFE NAV ON" "${KEEP_SIM}"
+    ;;
+  *)
+    echo "Invalid --guardian value: '${GUARDIAN}' (expected both|off|on)" >&2
+    exit 1
+    ;;
+esac

@@ -84,11 +84,12 @@ docker run --rm -v "$PWD:/uav_ws" uav-gps-failsafe:jazzy bash -c '
 ```
 7. **Live interactive demonstration (Gazebo 3D markers + Rogue Spoofer TX + Tactical Cyber-Attack & AI Guardian HUD):**
 ```bash
-# Unprotected flight: passes Top-Left -> Top-Right -> Bottom-Right, then hijacked heading to Bottom-Left
-./scripts/run_demo.sh --mode drift --rate 2.0 --guardian off
+# Sequential showcase (default): Stage 1/2 Safe Nav OFF (hijack on 4th leg) -> Stage 2/2 Safe Nav ON (AI failover)
+./scripts/run_demo.sh
 
-# AI Guardian protected flight: intercepts spoof on 4th leg & locks Optical Flow + LiDAR safe hover
-./scripts/run_demo.sh --mode drift --rate 2.0 --guardian on
+# Or run a single stage individually:
+./scripts/run_demo.sh --guardian off
+./scripts/run_demo.sh --guardian on
 ```
 
 ## Roadmap Progress

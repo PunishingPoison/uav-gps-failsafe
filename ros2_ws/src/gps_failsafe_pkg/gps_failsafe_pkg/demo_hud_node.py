@@ -60,11 +60,18 @@ NAV_NAMES = {
 class DemoHudNode(Node):
     """Drives live Gazebo 3D markers and a real-time 2D Tactical Telemetry HUD."""
 
-    def __init__(self, show_window: bool = True, square_size: float = 12.0, alt_m: float = 4.0) -> None:
+    def __init__(
+        self,
+        show_window: bool = True,
+        square_size: float = 12.0,
+        alt_m: float = 4.0,
+        stage_label: str = "",
+    ) -> None:
         super().__init__("demo_hud_node")
         self.show_window = bool(show_window)
         self.half_sq = float(square_size) / 2.0
         self.alt_m = float(alt_m)
+        self.stage_label = stage_label.strip()
 
         self._t0_s = time.monotonic()
         self._lpos: Optional[VehicleLocalPosition] = None
@@ -93,7 +100,8 @@ class DemoHudNode(Node):
         self._spoof_start_s: Optional[float] = None
         self._failover_start_s: Optional[float] = None
         self._pulse_phase = 0.0
-        self._events.append(("[T+0.0s] System online: waiting for drone takeoff...", (190, 210, 220)))
+        init_prefix = f"[{self.stage_label}] " if self.stage_label else ""
+        self._events.append((f"[T+0.0s] {init_prefix}System online: waiting for drone takeoff...", (190, 210, 220)))
 
         # Gazebo transport marker service client (/marker_array on GUI MarkerManager plugin)
         self._gz = GzNode()
@@ -293,27 +301,28 @@ class DemoHudNode(Node):
         canvas = np.full((H, W, 3), (24, 20, 18), dtype=np.uint8)  # BGR dark slate
 
         # --- Top Banner (Explains state at a glance) ---
+        prefix = f"[{self.stage_label}] " if self.stage_label else ""
         has_guardian = self._guardian is not None
         if failover_active:
             b_col, txt_col = (40, 130, 35), (240, 255, 240)
             since_s = f"@{self._spoof_start_s:.1f}s" if self._spoof_start_s else ""
-            banner = f"AI GUARDIAN INTERCEPTED SPOOF {since_s} (P={prob:.2f}) -> GPS CUT -> SAFE HOVER"
+            banner = f"{prefix}AI GUARDIAN INTERCEPTED {since_s} (P={prob:.2f}) -> GPS CUT -> SAFE HOVER"
         elif spoof_active and not has_guardian:
             b_col, txt_col = (35, 35, 200), (255, 245, 245)
-            banner = f"UNPROTECTED SPOOF FROM TX (-8,+8): DRONE TRAJECTORY HIJACKED | {adv_desc}"
+            banner = f"{prefix}UNPROTECTED SPOOF (-8,+8): TRAJECTORY HIJACKED | {adv_desc}"
         elif spoof_active:
             b_col, txt_col = (35, 35, 195), (255, 245, 245)
-            banner = f"ALERT: SPOOF SIGNAL FROM TX (-8,+8) | {adv_desc} | P(spoof)={prob:.2f}"
+            banner = f"{prefix}SPOOF FROM TX (-8,+8) | {adv_desc} | P(spoof)={prob:.2f}"
         elif self._mission and self._mission.get("phase") == "MISSION":
             wp_i = int(self._mission.get("wp_index", 0))
             b_col, txt_col = (120, 80, 25), (245, 250, 255)
-            banner = f"NOMINAL AUTONOMOUS SQUARE (WP {wp_i}/4) | GPS + Optical Flow + LiDAR"
+            banner = f"{prefix}NOMINAL SQUARE (WP {wp_i}/4) | GPS + Optical Flow + LiDAR"
         else:
             b_col, txt_col = (60, 60, 65), (225, 230, 235)
-            banner = "PRE-FLIGHT / TAKEOFF  |  Arming & climbing to 4.0 m mission altitude"
+            banner = f"{prefix}PRE-FLIGHT / TAKEOFF | Arming & climbing to 4.0 m altitude"
 
         cv2.rectangle(canvas, (10, 10), (W - 10, 56), b_col, -1)
-        cv2.putText(canvas, banner, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.53, txt_col, 2, cv2.LINE_AA)
+        cv2.putText(canvas, banner, (18, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.49, txt_col, 2, cv2.LINE_AA)
 
         # --- Left Panel: Tactical 2D Map (-16m .. +16m) ---
         mx0, my0, msz = 18, 72, 460
@@ -562,6 +571,7 @@ def parse_cli_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--no-window", action="store_true", help="Disable Tkinter HUD window (headless markers only)")
     parser.add_argument("--square-size", type=float, default=12.0)
     parser.add_argument("--altitude", type=float, default=4.0)
+    parser.add_argument("--stage-label", default="", help="Optional banner prefix e.g. 'SAFE NAV OFF (1/2)'")
     known, _ = parser.parse_known_args(argv)
     return known
 
@@ -569,7 +579,12 @@ def parse_cli_args(argv: list[str]) -> argparse.Namespace:
 def main(args=None) -> None:
     cli = parse_cli_args(sys.argv[1:])
     rclpy.init(args=args)
-    node = DemoHudNode(show_window=not cli.no_window, square_size=cli.square_size, alt_m=cli.altitude)
+    node = DemoHudNode(
+        show_window=not cli.no_window,
+        square_size=cli.square_size,
+        alt_m=cli.altitude,
+        stage_label=cli.stage_label,
+    )
     try:
         rclpy.spin(node)
     except (KeyboardInterrupt, ExternalShutdownException):
