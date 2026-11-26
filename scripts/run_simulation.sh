@@ -90,7 +90,9 @@ set -e
 source /opt/ros/jazzy/setup.bash
 source /uav_ws/ros2_ws/install/setup.bash
 
-mkdir -p /tmp/uav_logs
+mkdir -p /tmp/uav_logs /tmp/runtime-root
+chmod 700 /tmp/runtime-root
+export XDG_RUNTIME_DIR=/tmp/runtime-root
 export GZ_SIM_RESOURCE_PATH="/uav_ws/simulation/models:/uav_ws/simulation/worlds:/opt/PX4-Autopilot/Tools/simulation/gz/models:/opt/PX4-Autopilot/Tools/simulation/gz/worlds"
 
 GZ_RENDER_FLAGS="-s -r"
@@ -107,11 +109,6 @@ echo "[SIM] Starting Gazebo Harmonic (world=textured_field, headless=${HEADLESS}
 gz sim \${GZ_RENDER_FLAGS} /uav_ws/simulation/worlds/textured_field.sdf > /tmp/uav_logs/gz_server.log 2>&1 &
 GZ_SRV_PID=\$!
 
-if [[ "${HEADLESS}" -eq 0 ]]; then
-  gz sim -g > /tmp/uav_logs/gz_gui.log 2>&1 &
-  GZ_GUI_PID=\$!
-fi
-
 for i in \$(seq 1 30); do
   if gz service -l 2>/dev/null | grep -q "/world/textured_field/create"; then
     echo "[SIM] Gazebo world /world/textured_field ready (\${i}s)"
@@ -119,6 +116,11 @@ for i in \$(seq 1 30); do
   fi
   sleep 1
 done
+
+if [[ "${HEADLESS}" -eq 0 ]]; then
+  gz sim -g > /tmp/uav_logs/gz_gui.log 2>&1 &
+  GZ_GUI_PID=\$!
+fi
 
 echo "[SIM] Starting MicroXRCEAgent on UDP:8888..."
 MicroXRCEAgent udp4 -p 8888 > /tmp/uav_logs/uxrce.log 2>&1 &

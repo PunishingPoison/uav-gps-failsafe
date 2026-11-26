@@ -35,7 +35,7 @@ class AdversarySpooferNode(Node):
         mode: str = "drift",
         rate_mps: float = 2.0,
         bearing_deg: float = 0.0,
-        offset_n: float = 15.0,
+        offset_n: float = 4.0,
         offset_e: float = 0.0,
         offset_d: float = 0.0,
         delay_s: float = 0.0,
@@ -247,7 +247,12 @@ def parse_cli_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--mode", choices=["step", "drift", "takeover"], default="drift")
     parser.add_argument("--rate-mps", type=float, default=2.0, help="Drift/takeover speed [m/s]")
     parser.add_argument("--bearing-deg", type=float, default=0.0, help="Attack vector bearing [deg, 0=N, 90=E]")
-    parser.add_argument("--offset-n", type=float, default=15.0, help="Step offset North [m]")
+    parser.add_argument(
+        "--offset-n",
+        type=float,
+        default=4.0,
+        help="Step offset North [m] (4.0m stays within EKF2 gate for immediate fusion; >4.5m tests timeout reset)",
+    )
     parser.add_argument("--offset-e", type=float, default=0.0, help="Step offset East [m]")
     parser.add_argument("--offset-d", type=float, default=0.0, help="Step offset Down [m]")
     parser.add_argument("--delay", type=float, default=0.0, help="Delay before attack starts [s]")
