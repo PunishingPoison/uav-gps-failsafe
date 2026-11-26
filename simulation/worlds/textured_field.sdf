@@ -30,7 +30,7 @@
         <scene>scene</scene>
         <ambient_light>0.45 0.45 0.45</ambient_light>
         <background_color>0.72 0.80 0.88</background_color>
-        <camera_pose>-10 -10 8 0 0.55 0.78</camera_pose>
+        <camera_pose>-15.5 -15.5 13.0 0 0.56 0.785</camera_pose>
         <camera_clip>
           <near>0.25</near>
           <far>25000</far>
@@ -108,7 +108,15 @@
         <real_time_factor>true</real_time_factor>
         <iterations>true</iterations>
       </plugin>
-      <plugin filename="EntityTree" name="Entity tree"/>
+      <plugin filename="MarkerManager" name="Marker manager">
+        <gz-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar" type="bool">false</property>
+        </gz-gui>
+      </plugin>
     </gui>
 
     <gravity>0 0 -9.8</gravity>
@@ -231,6 +239,96 @@
       <link name="link">
         <visual name="v"><geometry><box><size>0.8 0.8 1.0</size></box></geometry>
           <material><ambient>0.85 0.75 0.15 1</ambient><diffuse>0.90 0.80 0.15 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Rogue GPS Spoofer Ground Transmitter Station (NW perimeter: East=-8.0m, North=+8.0m) -->
+    <model name="spoofer_tx_station">
+      <static>true</static>
+      <pose>-8.0 8.0 0 0 0 -0.785</pose>
+      <link name="link">
+        <visual name="base_pad">
+          <pose>0 0 0.04 0 0 0</pose>
+          <geometry><box><size>1.8 1.8 0.08</size></box></geometry>
+          <material><ambient>0.18 0.14 0.14 1</ambient><diffuse>0.26 0.18 0.18 1</diffuse></material>
+        </visual>
+        <visual name="tx_shelter">
+          <pose>0 0 0.55 0 0 0</pose>
+          <geometry><box><size>0.95 0.95 1.0</size></box></geometry>
+          <material><ambient>0.22 0.22 0.25 1</ambient><diffuse>0.32 0.32 0.36 1</diffuse></material>
+        </visual>
+        <visual name="warning_stripe">
+          <pose>0 0 0.95 0 0 0</pose>
+          <geometry><box><size>0.98 0.98 0.16</size></box></geometry>
+          <material><ambient>0.85 0.15 0.10 1</ambient><diffuse>0.95 0.20 0.12 1</diffuse></material>
+        </visual>
+        <visual name="antenna_mast">
+          <pose>0 0 2.0 0 0 0</pose>
+          <geometry><cylinder><radius>0.06</radius><length>2.0</length></cylinder></geometry>
+          <material><ambient>0.55 0.55 0.58 1</ambient><diffuse>0.70 0.70 0.75 1</diffuse></material>
+        </visual>
+        <visual name="antenna_dish">
+          <pose>0.18 0 2.75 0 0.9 0</pose>
+          <geometry><cylinder><radius>0.42</radius><length>0.08</length></cylinder></geometry>
+          <material><ambient>0.75 0.78 0.80 1</ambient><diffuse>0.88 0.90 0.92 1</diffuse></material>
+        </visual>
+        <visual name="tx_beacon">
+          <pose>0 0 3.12 0 0 0</pose>
+          <geometry><sphere><radius>0.18</radius></sphere></geometry>
+          <material>
+            <ambient>0.95 0.12 0.08 1</ambient>
+            <diffuse>1.0 0.18 0.12 1</diffuse>
+            <emissive>0.85 0.10 0.05 1</emissive>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Defined 12x12m Autonomous Mission Corridor (ground footprint & 4 corner pads) -->
+    <model name="mission_corridor_ground">
+      <static>true</static>
+      <pose>0 0 0.01 0 0 0</pose>
+      <link name="link">
+        <visual name="leg_north">
+          <pose>0 6 0 0 0 0</pose>
+          <geometry><box><size>12.0 0.16 0.015</size></box></geometry>
+          <material><ambient>0.10 0.72 0.62 1</ambient><diffuse>0.12 0.85 0.72 1</diffuse></material>
+        </visual>
+        <visual name="leg_south">
+          <pose>0 -6 0 0 0 0</pose>
+          <geometry><box><size>12.0 0.16 0.015</size></box></geometry>
+          <material><ambient>0.10 0.72 0.62 1</ambient><diffuse>0.12 0.85 0.72 1</diffuse></material>
+        </visual>
+        <visual name="leg_east">
+          <pose>6 0 0 0 0 0</pose>
+          <geometry><box><size>0.16 12.0 0.015</size></box></geometry>
+          <material><ambient>0.10 0.72 0.62 1</ambient><diffuse>0.12 0.85 0.72 1</diffuse></material>
+        </visual>
+        <visual name="leg_west">
+          <pose>-6 0 0 0 0 0</pose>
+          <geometry><box><size>0.16 12.0 0.015</size></box></geometry>
+          <material><ambient>0.10 0.72 0.62 1</ambient><diffuse>0.12 0.85 0.72 1</diffuse></material>
+        </visual>
+        <visual name="wp1_top_left">
+          <pose>-6 6 0.01 0 0 0</pose>
+          <geometry><cylinder><radius>0.55</radius><length>0.025</length></cylinder></geometry>
+          <material><ambient>0.12 0.78 0.65 1</ambient><diffuse>0.15 0.90 0.75 1</diffuse></material>
+        </visual>
+        <visual name="wp2_top_right">
+          <pose>6 6 0.01 0 0 0</pose>
+          <geometry><cylinder><radius>0.55</radius><length>0.025</length></cylinder></geometry>
+          <material><ambient>0.12 0.78 0.65 1</ambient><diffuse>0.15 0.90 0.75 1</diffuse></material>
+        </visual>
+        <visual name="wp3_bottom_right">
+          <pose>6 -6 0.01 0 0 0</pose>
+          <geometry><cylinder><radius>0.55</radius><length>0.025</length></cylinder></geometry>
+          <material><ambient>0.12 0.78 0.65 1</ambient><diffuse>0.15 0.90 0.75 1</diffuse></material>
+        </visual>
+        <visual name="wp4_bottom_left">
+          <pose>-6 -6 0.01 0 0 0</pose>
+          <geometry><cylinder><radius>0.55</radius><length>0.025</length></cylinder></geometry>
+          <material><ambient>0.85 0.65 0.10 1</ambient><diffuse>0.95 0.72 0.12 1</diffuse></material>
         </visual>
       </link>
     </model>
