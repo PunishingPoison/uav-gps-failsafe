@@ -7,7 +7,7 @@ Reproducible PX4 Autopilot SITL + Gazebo Harmonic + ROS 2 + Machine Learning tes
 - **Autopilot & Simulator:** PX4 Autopilot `v1.15.4` SITL + Gazebo Harmonic (`8.15.0`) + QGroundControl
 - **Middleware:** ROS 2 Jazzy + Micro XRCE-DDS Agent (`v2.4.3`) + `px4_msgs` (`release/1.15`)
 - **Runtime Container:** `uav-gps-failsafe:jazzy` (layered on `infynex-px4-sitl:jazzy` so PX4 `v1.15.4` is pre-compiled and isolated from host OS Python/ROS differences)
-- **Sensors:** GNSS (`HIL_GPS` / simulated GPS), downward camera Optical Flow (`/fmu/in/sensor_optical_flow`), downward 1D LiDAR (`DISTANCE_SENSOR`), IMU + Barometer
+- **Sensors:** GNSS (`HIL_GPS` on `14030`/`13030`), downward camera Optical Flow (`OPTICAL_FLOW_RAD` via OpenCV Lucas-Kanade), downward 1D LiDAR (`DISTANCE_SENSOR`), IMU + Barometer
 
 ## Repository Structure
 
@@ -24,8 +24,44 @@ uav-gps-failsafe/
 └── data/                              # Raw & processed flight telemetry datasets
 ```
 
-## Quick Verification (Phase 1)
+## Quick Verification & Usage (Phases 1–3)
 
+1. **Verify container, ROS 2, PX4, Gazebo, and Python stack (Phase 1):**
 ```bash
 ./scripts/check_env.sh
 ```
+
+2. **Launch simulation + sensor bridge + MicroXRCEAgent (Phase 2):**
+```bash
+./scripts/run_simulation.sh --headless --detach
+docker exec uav_gps_failsafe_sim python3 /uav_ws/scripts/configure_ekf2_params.py --mode status
+```
+
+3. **Run autonomous mission & GPS spoofing adversary inside container (Phase 3):**
+```bash
+docker exec -it uav_gps_failsafe_sim bash -c '
+  source /opt/ros/jazzy/setup.bash && source /uav_ws/ros2_ws/install/setup.bash
+  ros2 run gps_failsafe_pkg mission_runner_node --pattern square --size 12.0 --altitude 4.0 --loops 2
+'
+```
+In a second terminal (while mission runs), launch one of the three attack profiles (`step`, `drift`, or `takeover`):
+```bash
+docker exec -it uav_gps_failsafe_sim bash -c '
+  source /opt/ros/jazzy/setup.bash && source /uav_ws/ros2_ws/install/setup.bash
+  ros2 run gps_failsafe_pkg adversary_spoofer_node --mode drift --rate-mps 2.0 --bearing-deg 0.0
+'
+```
+Switch EKF2 parameters manually (nominal vs GPS-denied failover) or stop simulation cleanly:
+```bash
+docker exec uav_gps_failsafe_sim python3 /uav_ws/scripts/configure_ekf2_params.py --mode gps-denied
+./scripts/run_simulation.sh --stop
+```
+
+## Roadmap Progress
+
+- [x] **Phase 1:** Dockerized PX4 SITL (`v1.15.4`), Gazebo Harmonic, ROS 2 Jazzy, `px4_msgs`, and workspace setup
+- [x] **Phase 2:** Textured Gazebo field, custom `x500_flow_lidar` model + airframe `4015`, `sensor_bridge_node`, EKF2 failover verified
+- [x] **Phase 3:** `mission_runner_node` + `adversary_spoofer_node` (`step`, `drift`, `takeover`) verified with live hijack
+- [ ] **Phase 4:** Telemetry logger, feature extraction, dataset generation, RF & XGBoost training
+- [ ] **Phase 5:** Real-time AI Guardian failsafe node & zero-crash recovery demo
+- [ ] **Phase 6:** Automated ablation experiments & publication-grade paper figures

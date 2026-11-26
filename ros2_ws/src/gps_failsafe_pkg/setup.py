@@ -21,6 +21,8 @@ setup(
     entry_points={
         'console_scripts': [
             'sensor_bridge_node = gps_failsafe_pkg.sensor_bridge_node:main',
+            'mission_runner_node = gps_failsafe_pkg.mission_runner_node:main',
+            'adversary_spoofer_node = gps_failsafe_pkg.adversary_spoofer_node:main',
         ],
     },
 )
