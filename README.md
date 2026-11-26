@@ -22,7 +22,7 @@ uav-gps-failsafe/
 ├── ml/                                # Training & evaluation scripts + saved .joblib models
 ├── analysis/                          # Experiment evaluation (latency, RMSE, drift) and paper figure plotting
 ├── data/                              # Raw & processed flight telemetry datasets
-└── web/                               # Vercel-ready static project portal (architecture, AI, datasets, research, Review-1)
+└── web/                               # Vercel-ready static project portal (architecture, AI, datasets, results, research)
 ```
 
 ## Quick Verification & Usage (Phases 1–3)

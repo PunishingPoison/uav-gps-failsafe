@@ -1,10 +1,8 @@
 import {
   ABLATION_RUNS,
   CODE_MODULES,
-  COURSE_OUTCOMES,
   DATASET_EPISODES,
   DATASET_SUMMARY,
-  EVALUATION_RUBRICS,
   FEATURE_GROUPS,
   IEEE_REFERENCES,
   LITERATURE_MATRIX,
@@ -27,7 +25,6 @@ const TAB_ORDER = [
   { id: "ai", label: "AI, Datasets & Code" },
   { id: "simulation", label: "Simulation & Results" },
   { id: "research", label: "Research & Literature" },
-  { id: "academic", label: "Review-1 & Rubrics" },
 ];
 
 function esc(str) {
@@ -133,7 +130,7 @@ function renderOverview() {
     <h3 class="subhead">3. Bounded Objectives &amp; Project Scope</h3>
     <div class="two-col">
       <div class="paper-panel">
-        <h4 style="margin-top:0;">Project Objectives (Review-1 Bounded Set)</h4>
+        <h4 style="margin-top:0;">Project Objectives</h4>
         ${objHtml}
       </div>
       <div class="paper-panel">
@@ -478,7 +475,7 @@ function renderResearch() {
   return `
     <div class="section-header">
       <h2>Research Survey &amp; Literature Library</h2>
-      <p class="section-lead">Peer-reviewed literature synthesis sorted strictly from <strong>Latest to Oldest (2026 &rarr; 2018)</strong> for Review-1 compliance, plus the complete 7-theme repository of all 41 source papers studied for this architecture.</p>
+      <p class="section-lead">Peer-reviewed literature synthesis sorted from <strong>Latest to Oldest (2026 &rarr; 2018)</strong>, plus the complete 7-theme repository of all 41 source papers studied for this architecture.</p>
     </div>
 
     <h3 class="subhead" style="margin-top:0;">1. Structured Literature Review Matrix (Sorted Latest to Oldest)</h3>
@@ -503,78 +500,66 @@ function renderResearch() {
   `;
 }
 
-function renderAcademic() {
-  const coRows = COURSE_OUTCOMES.map(
-    (c) => `
-    <tr>
-      <td class="mono"><strong>${esc(c.co)}</strong></td>
-      <td>${esc(c.statement)}</td>
-      <td class="mono">${esc(c.wk)}</td>
-      <td class="mono">${esc(c.po)}</td>
-    </tr>`
-  ).join("");
-
-  const rubricRows = EVALUATION_RUBRICS.map(
-    (r) => `
-    <tr>
-      <td><strong>${esc(r.rubric)}</strong></td>
-      <td class="mono"><strong>${esc(r.maxMarks)}</strong></td>
-      <td>${esc(r.excellentCriteria)}</td>
-      <td>${esc(r.projectFulfillment)}</td>
-    </tr>`
-  ).join("");
-
-  const ac = PROJECT_META.academic;
-  return `
-    <div class="section-header">
-      <h2>BMSCE Review-1 Dossier, CO-PO Mapping &amp; Evaluation Rubrics</h2>
-      <p class="section-lead">Formal academic alignment matching the Mini Project Work (<code>${esc(ac.courseCode)}</code>) presentation template and CO1–CO7 / Rubric 1–4 evaluation specifications.</p>
-    </div>
-
-    <div class="paper-panel">
-      <h3 style="margin-top:0;font-family:var(--font-display);">${esc(ac.institution)}</h3>
-      <p class="prose" style="margin-bottom:14px;">${esc(ac.department)} — Review-1 Submission Header Fields (Team/Faculty template slots from course specification):</p>
-      <div class="table-wrap" style="margin-bottom:0;">
-        <table>
-          <tbody>
-            <tr><th style="width:220px;">Course &amp; Code</th><td>${esc(ac.course)} (<code>${esc(ac.courseCode)}</code>)</td></tr>
-            <tr><th>Project Title</th><td><strong>${esc(PROJECT_META.title)}</strong></td></tr>
-            <tr><th>Evaluation Stage &amp; Date</th><td>${esc(ac.reviewStage)} | Date: <code>${esc(ac.reviewDate)}</code> | Academic Year: <code>${esc(ac.academicYear)}</code></td></tr>
-            <tr><th>Semester &amp; Team</th><td>Semester &amp; Section: <code>${esc(ac.semesterSection)}</code> | Team Number: <code>${esc(ac.teamNumber)}</code></td></tr>
-            <tr><th>Presented By (Students)</th><td class="mono">${ac.students.map((s) => esc(s)).join(" , ")}</td></tr>
-            <tr><th>Faculty In-Charge</th><td>${esc(ac.facultyInCharge)}</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <h3 class="subhead">Course Outcomes (COs), Knowledge Profiles (WKs) &amp; PO Mapping</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>CO</th><th>Course Outcome Statement</th><th>WK Mapped</th><th>PO Mapping</th></tr></thead>
-        <tbody>${coRows}</tbody>
-      </table>
-    </div>
-
-    <h3 class="subhead">Review-1 Evaluation Rubrics Alignment (Total: 30 Marks Target)</h3>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Rubric &amp; CO</th><th>Marks</th><th>Excellent Benchmark Criteria</th><th>How This Project Satisfies It</th></tr></thead>
-        <tbody>${rubricRows}</tbody>
-      </table>
-    </div>
-    ${pagerHtml("academic")}
-  `;
-}
-
 const RENDERERS = {
   overview: renderOverview,
   architecture: renderArchitecture,
   ai: renderAiAndCode,
   simulation: renderSimulation,
   research: renderResearch,
-  academic: renderAcademic,
 };
+
+function enhanceZoomableMedia() {
+  document.querySelectorAll(".diagram-frame").forEach((frame) => {
+    const svg = frame.querySelector("svg.diagram-svg");
+    if (!svg || frame.querySelector(".zoom-trigger-bar")) return;
+    const title = svg.getAttribute("aria-label") || "Architecture Diagram";
+    const bar = document.createElement("div");
+    bar.className = "zoom-trigger-bar";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "zoom-open-btn";
+    btn.textContent = "Expand & Zoom";
+    btn.addEventListener("click", () => openLightboxWithSvg(svg, title, ""));
+    bar.appendChild(btn);
+    frame.prepend(bar);
+    svg.addEventListener("click", () => openLightboxWithSvg(svg, title, ""));
+  });
+
+  document.querySelectorAll("img.figure-img").forEach((img) => {
+    img.title = "Click to enlarge and zoom";
+    img.addEventListener("click", () => {
+      const fig = img.closest("figure");
+      const card = img.closest(".stage-card");
+      const capEl = fig ? fig.querySelector("figcaption") : null;
+      const capText = capEl ? capEl.textContent : img.alt || "";
+      let titleText = img.alt || "Figure Viewer";
+      if (card) {
+        const badge = card.querySelector(".badge");
+        if (badge) titleText = `${badge.textContent} — ${img.alt}`;
+      }
+      openLightboxWithImg(img.src, titleText, capText);
+    });
+  });
+
+  // Add subtle Expand & Zoom buttons inside simulation/figure cards too
+  document.querySelectorAll(".figure-card, .stage-card").forEach((card) => {
+    if (card.querySelector(".zoom-trigger-bar")) return;
+    const imgs = card.querySelectorAll("img.figure-img");
+    if (!imgs.length) return;
+    const targetImg = imgs[0];
+    const bar = document.createElement("div");
+    bar.className = "zoom-trigger-bar";
+    bar.style.marginTop = "8px";
+    bar.style.marginBottom = "0";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "zoom-open-btn";
+    btn.textContent = imgs.length > 1 ? "Expand Screenshots to Zoom" : "Expand & Zoom";
+    btn.addEventListener("click", () => targetImg.click());
+    bar.appendChild(btn);
+    card.insertBefore(bar, targetImg);
+  });
+}
 
 function mountAllPanels() {
   for (const { id } of TAB_ORDER) {
@@ -583,12 +568,12 @@ function mountAllPanels() {
       panel.innerHTML = RENDERERS[id]();
     }
   }
+  enhanceZoomableMedia();
 }
 
 const TAB_ALIASES = {
   results: "simulation",
   literature: "research",
-  rubrics: "academic",
   hld: "architecture",
   lld: "architecture",
   datasets: "ai",
@@ -612,6 +597,148 @@ function activateTab(tabId, pushHash = true) {
     history.replaceState(null, "", `#${valid}`);
   }
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// --- Lightbox Zoom & Pan Controller ---
+const lbState = { zoom: 1.0, tx: 0, ty: 0, dragging: false, startX: 0, startY: 0, startTx: 0, startTy: 0 };
+
+function applyLbTransform() {
+  const canvas = document.getElementById("lightbox-canvas");
+  const readout = document.getElementById("lightbox-zoom-readout") || document.getElementById("lb-zoom-readout");
+  if (canvas) {
+    canvas.style.transform = `translate(${lbState.tx}px, ${lbState.ty}px) scale(${lbState.zoom})`;
+  }
+  if (readout) {
+    readout.textContent = `${Math.round(lbState.zoom * 100)}%`;
+  }
+}
+
+function resetLbView() {
+  lbState.zoom = 1.0;
+  lbState.tx = 0;
+  lbState.ty = 0;
+  applyLbTransform();
+}
+
+function stepLbZoom(delta, anchorX = null, anchorY = null) {
+  const next = Math.max(0.5, Math.min(5.0, +(lbState.zoom + delta).toFixed(2)));
+  if (next === lbState.zoom) return;
+  if (anchorX !== null && anchorY !== null) {
+    const stage = document.getElementById("lightbox-stage");
+    const rect = stage.getBoundingClientRect();
+    const cx = anchorX - (rect.left + rect.width / 2);
+    const cy = anchorY - (rect.top + rect.height / 2);
+    const ratio = next / lbState.zoom;
+    lbState.tx = cx - (cx - lbState.tx) * ratio;
+    lbState.ty = cy - (cy - lbState.ty) * ratio;
+  }
+  lbState.zoom = next;
+  if (lbState.zoom <= 1.0) {
+    lbState.tx = 0;
+    lbState.ty = 0;
+  }
+  applyLbTransform();
+}
+
+function showLightbox(title, caption, node) {
+  const lb = document.getElementById("media-lightbox");
+  const canvas = document.getElementById("lightbox-canvas");
+  const titleEl = document.getElementById("lightbox-title");
+  const capEl = document.getElementById("lightbox-caption");
+  if (!lb || !canvas) return;
+  canvas.innerHTML = "";
+  canvas.appendChild(node);
+  if (titleEl) titleEl.textContent = title || "Expanded View";
+  if (capEl) capEl.textContent = caption || "";
+  resetLbView();
+  lb.hidden = false;
+  lb.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function openLightboxWithSvg(svgEl, title, caption) {
+  const clone = svgEl.cloneNode(true);
+  clone.removeAttribute("class");
+  showLightbox(title, caption, clone);
+}
+
+function openLightboxWithImg(src, title, caption) {
+  const img = document.createElement("img");
+  img.src = src;
+  img.alt = title || "";
+  showLightbox(title, caption, img);
+}
+
+function closeLightbox() {
+  const lb = document.getElementById("media-lightbox");
+  if (!lb || lb.hidden) return;
+  lb.hidden = true;
+  lb.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+function bindLightboxEvents() {
+  const lb = document.getElementById("media-lightbox");
+  const stage = document.getElementById("lightbox-stage");
+  const canvas = document.getElementById("lightbox-canvas");
+  if (!lb || !stage || !canvas) return;
+
+  document.getElementById("lb-zoom-in")?.addEventListener("click", () => stepLbZoom(0.35));
+  document.getElementById("lb-zoom-out")?.addEventListener("click", () => stepLbZoom(-0.35));
+  document.getElementById("lb-zoom-reset")?.addEventListener("click", resetLbView);
+  document.getElementById("lb-close")?.addEventListener("click", closeLightbox);
+
+  stage.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    stepLbZoom(e.deltaY < 0 ? 0.25 : -0.25, e.clientX, e.clientY);
+  }, { passive: false });
+
+  stage.addEventListener("dblclick", (e) => {
+    if (lbState.zoom > 1.1) {
+      resetLbView();
+    } else {
+      stepLbZoom(1.0, e.clientX, e.clientY);
+    }
+  });
+
+  stage.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    lbState.dragging = true;
+    lbState.startX = e.clientX;
+    lbState.startY = e.clientY;
+    lbState.startTx = lbState.tx;
+    lbState.startTy = lbState.ty;
+    stage.classList.add("dragging");
+    canvas.classList.add("dragging");
+    stage.setPointerCapture(e.pointerId);
+  });
+
+  stage.addEventListener("pointermove", (e) => {
+    if (!lbState.dragging) return;
+    lbState.tx = lbState.startTx + (e.clientX - lbState.startX);
+    lbState.ty = lbState.startTy + (e.clientY - lbState.startY);
+    applyLbTransform();
+  });
+
+  const endDrag = (e) => {
+    if (!lbState.dragging) return;
+    lbState.dragging = false;
+    stage.classList.remove("dragging");
+    canvas.classList.remove("dragging");
+    if (Math.hypot(e.clientX - lbState.startX, e.clientY - lbState.startY) < 4 && e.target === stage) {
+      closeLightbox();
+    }
+  };
+  stage.addEventListener("pointerup", endDrag);
+  stage.addEventListener("pointercancel", endDrag);
+
+  document.addEventListener("keydown", (e) => {
+    if (lb.hidden) return;
+    if (e.key === "Escape") closeLightbox();
+    else if (e.key === "+" || e.key === "=") stepLbZoom(0.35);
+    else if (e.key === "-") stepLbZoom(-0.35);
+    else if (e.key === "0") resetLbView();
+  });
 }
 
 function bindEvents() {
@@ -665,5 +792,6 @@ function bindEvents() {
 
 mountAllPanels();
 bindEvents();
+bindLightboxEvents();
 const initial = window.location.hash.replace("#", "") || "overview";
 activateTab(initial, false);

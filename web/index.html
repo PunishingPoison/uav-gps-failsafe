@@ -15,7 +15,7 @@
       <div class="header-top">
         <div class="brand-lockup">
           <a href="#overview" class="brand-title" data-tab-link="overview">UAV GPS-Failsafe</a>
-          <span class="brand-course">Course 24AM5PWMPW | BMSCE Dept. of Machine Learning</span>
+          <span class="brand-course">PX4 SITL | Gazebo Harmonic | ROS 2 | ML</span>
         </div>
         <div class="header-actions">
           <a class="repo-link" href="https://github.com/PunishingPoison/uav-gps-failsafe" target="_blank" rel="noopener noreferrer">
@@ -33,7 +33,6 @@
         <button class="tab-btn" role="tab" id="tab-ai" aria-controls="panel-ai" aria-selected="false" data-tab="ai">AI, Datasets &amp; Code</button>
         <button class="tab-btn" role="tab" id="tab-simulation" aria-controls="panel-simulation" aria-selected="false" data-tab="simulation">Simulation &amp; Results</button>
         <button class="tab-btn" role="tab" id="tab-research" aria-controls="panel-research" aria-selected="false" data-tab="research">Research &amp; Literature</button>
-        <button class="tab-btn" role="tab" id="tab-academic" aria-controls="panel-academic" aria-selected="false" data-tab="academic">Review-1 &amp; Rubrics</button>
       </nav>
     </div>
   </header>
@@ -44,15 +43,35 @@
     <section id="panel-ai" class="tab-panel" role="tabpanel" aria-labelledby="tab-ai"></section>
     <section id="panel-simulation" class="tab-panel" role="tabpanel" aria-labelledby="tab-simulation"></section>
     <section id="panel-research" class="tab-panel" role="tabpanel" aria-labelledby="tab-research"></section>
-    <section id="panel-academic" class="tab-panel" role="tabpanel" aria-labelledby="tab-academic"></section>
   </main>
 
   <footer class="site-footer">
     <div class="footer-inner">
-      <span><strong>UAV GPS-Failsafe</strong> | BMS College of Engineering (Course Code 24AM5PWMPW, A.Y. 2026-27)</span>
+      <span><strong>UAV GPS-Failsafe</strong> | AI GNSS Spoofing Detection &amp; GPS-Denied Failsafe Architecture</span>
       <span>Source: <a href="https://github.com/PunishingPoison/uav-gps-failsafe" target="_blank" rel="noopener noreferrer">github.com/PunishingPoison/uav-gps-failsafe</a></span>
     </div>
   </footer>
+
+  <!-- Interactive Zoom & Pan Lightbox for Diagrams and Screenshots -->
+  <div id="media-lightbox" class="lightbox" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Expanded diagram and screenshot viewer">
+    <div class="lightbox-toolbar">
+      <div class="lightbox-title" id="lightbox-title">Preview</div>
+      <div class="lightbox-controls">
+        <button type="button" class="lb-btn" id="lb-zoom-out" title="Zoom out (-)">-</button>
+        <span class="lb-zoom-readout" id="lb-zoom-readout">100%</span>
+        <button type="button" class="lb-btn" id="lb-zoom-in" title="Zoom in (+)">+</button>
+        <button type="button" class="lb-btn" id="lb-zoom-reset" title="Reset zoom & position">Reset</button>
+        <button type="button" class="lb-btn lb-close" id="lb-close" title="Close viewer (Esc)">Close</button>
+      </div>
+    </div>
+    <div class="lightbox-stage" id="lightbox-stage">
+      <div class="lightbox-canvas" id="lightbox-canvas"></div>
+    </div>
+    <div class="lightbox-footer">
+      <span id="lightbox-caption"></span>
+      <span class="lightbox-hint">Scroll or use +/- to zoom, drag to pan, Esc to close</span>
+    </div>
+  </div>
 
   <script type="module" src="app.js"></script>
 </body>

@@ -7,19 +7,6 @@ export const PROJECT_META = {
   subtitle:
     "An autonomous PX4 SITL, Gazebo Harmonic, ROS 2, and Machine Learning architecture that detects GNSS spoofing in real time and executes sub-10 ms failover to downward Optical Flow and 1D LiDAR navigation.",
   repoUrl: "https://github.com/PunishingPoison/uav-gps-failsafe",
-  academic: {
-    institution: "B.M.S. College of Engineering (Autonomous Institute, Affiliated to VTU, Belagavi)",
-    department: "Department of Machine Learning (B.E. in Artificial Intelligence and Machine Learning)",
-    course: "Mini Project Work",
-    courseCode: "24AM5PWMPW",
-    reviewStage: "Review - 1",
-    reviewDate: "28-11-2026",
-    academicYear: "2026-27",
-    semesterSection: "5 '_'",
-    teamNumber: "[Team Number]",
-    students: ["<student 1 name & usn>", "<student 2 name & usn>", "<student 3 name & usn>"],
-    facultyInCharge: "Dr. / Prof. [Type faculty name here] (Assistant / Associate / Professor, Dept. of ML)",
-  },
   headlineMetrics: [
     { label: "Random Forest Test F1", value: "0.9426", detail: "ROC-AUC 0.9879 on unseen flights", tone: "cobalt" },
     { label: "XGBoost Test ROC-AUC", value: "0.9885", detail: "Test F1 0.9369, Precision 0.9599", tone: "cobalt" },
@@ -517,41 +504,4 @@ export const IEEE_REFERENCES = [
   "[10] A. Altaweel et al., \"GPS Spoofing Attacks in FANETs: A Systematic Literature Review,\" IEEE Access (DOI: 10.1109/ACCESS.2023.3281731), 2023.",
   "[11] C. Deng, C.-H. J. Wang, and K. H. Low, \"Investigation of Using Sky Openness Ratio as Predictor for Navigation Performance in Urban-like Environment to Support PBN in UTM,\" Sensors (PMC8838107), 2022.",
   "[12] N. Gu, F. Xing, and Z. You, \"GNSS Spoofing Detection Based on Coupled Visual/Inertial/GNSS Navigation System,\" Sensors (PMC8539116), 2021.",
-];
-
-export const COURSE_OUTCOMES = [
-  { co: "CO1", statement: "Conduct a structured literature review and identify research gaps for identifying complex engineering problems.", wk: "WK1-5, WK7-8", po: "PO1, PO2, PO4, PO6" },
-  { co: "CO2", statement: "Formulate a clear problem statement, define feasible objectives and scope for the identified problem.", wk: "WK2, WK3, WK4", po: "PO2" },
-  { co: "CO3", statement: "Design high level and low level to integrate various modules using effective design principles and practices.", wk: "WK1-4, WK5-7", po: "PO1, PO3, PO6" },
-  { co: "CO4", statement: "Apply modern AI related tools, frameworks, and engineering technologies with relevant experiments, testing and performance metrics evaluation.", wk: "WK2, WK6", po: "PO5" },
-  { co: "CO5", statement: "Adhere to ethical principles and demonstrate professional conduct.", wk: "WK9", po: "PO7" },
-  { co: "CO6", statement: "Prepare structured technical reports, design documentation, and deliver effective presentations while functioning as responsible team member.", wk: "—", po: "PO8, PO9" },
-  { co: "CO7", statement: "Practice project management principles, plan resources efficiently, adapt to emerging tools/technologies, and demonstrate lifelong learning skills.", wk: "WK8", po: "PO10, PO11" },
-];
-
-export const EVALUATION_RUBRICS = [
-  {
-    rubric: "Rubric 1 — Literature Survey (CO1)",
-    maxMarks: "10M",
-    excellentCriteria: "In-depth analysis and synthesis are done on most & recent relevant literature.",
-    projectFulfillment: "12 latest-to-oldest peer-reviewed papers synthesized (2026 → 2021) + full 41-reference categorized library with explicit limitation mapping.",
-  },
-  {
-    rubric: "Rubric 2 — Problem Formulation, Objectives & Scope (CO2)",
-    maxMarks: "5M",
-    excellentCriteria: "The problem is clearly formulated with well bounded objectives and scope that are achievable & time-bound.",
-    projectFulfillment: "3 bounded objectives covering SITL digital twin, leakage-free 24-feature AI detection, and real-time EKF2 GPS-denied failover with explicit boundaries.",
-  },
-  {
-    rubric: "Rubric 3 — Design: High & Low Levels (CO3)",
-    maxMarks: "10M",
-    excellentCriteria: "Provides a clear, structured, and accurate system architecture with well-defined modules, data flow, and interactions.",
-    projectFulfillment: "Explicit HLD bus diagram (Gazebo, PX4 EKF2, ROS 2 uXRCE-DDS, MAVLink UDP 14030/13030/14540) + LLD 20 Hz FeatureWindowExtractor & failover state machine.",
-  },
-  {
-    rubric: "Rubric 4 — Modern Tools Identification (CO4)",
-    maxMarks: "5M",
-    excellentCriteria: "Identifies the most appropriate and up-to-date modern tools, technologies, frameworks, and platforms.",
-    projectFulfillment: "PX4 v1.15.4, Gazebo Harmonic, ROS 2 Jazzy, Micro XRCE-DDS v2.4.3, OpenCV Lucas-Kanade, Scikit-Learn, XGBoost, PyMAVLink, PyULog, Docker, Vercel.",
-  },
 ];
