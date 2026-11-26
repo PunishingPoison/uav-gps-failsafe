@@ -21,7 +21,8 @@ uav-gps-failsafe/
 │   └── gps_failsafe_pkg/              # Mission runner, sensor bridge, adversary spoofer, logger, feature extractor, AI guardian
 ├── ml/                                # Training & evaluation scripts + saved .joblib models
 ├── analysis/                          # Experiment evaluation (latency, RMSE, drift) and paper figure plotting
-└── data/                              # Raw & processed flight telemetry datasets
+├── data/                              # Raw & processed flight telemetry datasets
+└── web/                               # Vercel-ready static project portal (architecture, AI, datasets, research, Review-1)
 ```
 
 ## Quick Verification & Usage (Phases 1–3)
@@ -91,6 +92,12 @@ docker run --rm -v "$PWD:/uav_ws" uav-gps-failsafe:jazzy bash -c '
 ./scripts/run_demo.sh --guardian off
 ./scripts/run_demo.sh --guardian on
 ```
+8. **Project Technical Website (`web/`, Vercel-ready):**
+- Root `vercel.json` points Vercel directly to `web/` (`outputDirectory: "web"`). Run locally with:
+```bash
+python3 -m http.server 8080 --directory web
+```
+- Note: Update `web/data.js`, `web/diagrams.js`, and `web/assets/images/` whenever core project features, models, or experiments change.
 
 ## Roadmap Progress
 
