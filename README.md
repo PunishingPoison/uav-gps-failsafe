@@ -57,11 +57,19 @@ docker exec uav_gps_failsafe_sim python3 /uav_ws/scripts/configure_ekf2_params.p
 ./scripts/run_simulation.sh --stop
 ```
 
+4. **Generate multi-episode dataset & train/evaluate AI detectors (Phase 4):**
+```bash
+python3 ml/collect_dataset.py
+docker run --rm -v "$PWD:/uav_ws" uav-gps-failsafe:jazzy bash -c '
+  python3 /uav_ws/ml/train_models.py && python3 /uav_ws/ml/evaluate_models.py
+'
+```
+
 ## Roadmap Progress
 
 - [x] **Phase 1:** Dockerized PX4 SITL (`v1.15.4`), Gazebo Harmonic, ROS 2 Jazzy, `px4_msgs`, and workspace setup
 - [x] **Phase 2:** Textured Gazebo field, custom `x500_flow_lidar` model + airframe `4015`, `sensor_bridge_node`, EKF2 failover verified
-- [x] **Phase 3:** `mission_runner_node` + `adversary_spoofer_node` (`step`, `drift`, `takeover`) verified with live hijack
-- [ ] **Phase 4:** Telemetry logger, feature extraction, dataset generation, RF & XGBoost training
+- [x] **Phase 3:** `mission_runner_node` + `adversary_spoofer_node` (`step`, `drift`, `takeover`) verified visually in Gazebo GUI (`fused: True`)
+- [x] **Phase 4:** `telemetry_logger_node`, 24-feature sliding-window `feature_extractor`, 16-episode dataset, RF (`F1=0.9426`, `AUC=0.9879`) & XGBoost (`F1=0.9369`, `AUC=0.9885`) trained and evaluated
 - [ ] **Phase 5:** Real-time AI Guardian failsafe node & zero-crash recovery demo
 - [ ] **Phase 6:** Automated ablation experiments & publication-grade paper figures

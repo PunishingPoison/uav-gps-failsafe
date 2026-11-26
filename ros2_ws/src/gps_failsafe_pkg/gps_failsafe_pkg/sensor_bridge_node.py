@@ -103,6 +103,7 @@ class SensorBridgeNode(Node):
 
         self.gt_odom_pub = self.create_publisher(Odometry, "/uav/ground_truth_odom", 10)
         self.gt_navsat_pub = self.create_publisher(NavSatFix, "/uav/ground_truth_navsat", 10)
+        self.opt_flow_pub = self.create_publisher(String, "/uav/optical_flow", 10)
         self.status_pub = self.create_publisher(String, "/uav/sensor_bridge_status", 10)
 
         self.create_timer(1.0 / gps_rate_hz, self._send_nominal_gps)
@@ -212,6 +213,18 @@ class SensorBridgeNode(Node):
             0,          # time_delta_distance_us
             dist,       # distance [m]
         )
+        flow_msg = String()
+        flow_msg.data = json.dumps(
+            {
+                "stamp_ns": int(now_ns),
+                "dt_s": dt_us * 1e-6,
+                "pixel_flow_x": px_flow_x,
+                "pixel_flow_y": px_flow_y,
+                "range_m": dist,
+                "quality": int(quality),
+            }
+        )
+        self.opt_flow_pub.publish(flow_msg)
         self._cnt_flow += 1
 
     def _on_navsat(self, msg: NavSatFix) -> None:
