@@ -65,11 +65,21 @@ docker run --rm -v "$PWD:/uav_ws" uav-gps-failsafe:jazzy bash -c '
 '
 ```
 
+5. **Run live AI Guardian with automated failover (Phase 5):**
+```bash
+./scripts/run_simulation.sh --detach
+docker exec -it uav_gps_failsafe_sim bash -c '
+  source /opt/ros/jazzy/setup.bash && source /uav_ws/ros2_ws/install/setup.bash
+  ros2 run gps_failsafe_pkg guardian_ai_node --model rf --threshold 0.80 --consecutive 5
+'
+```
+While running `mission_runner_node` + `adversary_spoofer_node` in parallel terminals, the Guardian cuts `EKF2_GPS_CTRL=0`, sets `EKF2_HGT_REF=2`, and engages `AUTO.LOITER` GPS-denied hover automatically.
+
 ## Roadmap Progress
 
 - [x] **Phase 1:** Dockerized PX4 SITL (`v1.15.4`), Gazebo Harmonic, ROS 2 Jazzy, `px4_msgs`, and workspace setup
 - [x] **Phase 2:** Textured Gazebo field, custom `x500_flow_lidar` model + airframe `4015`, `sensor_bridge_node`, EKF2 failover verified
 - [x] **Phase 3:** `mission_runner_node` + `adversary_spoofer_node` (`step`, `drift`, `takeover`) verified visually in Gazebo GUI (`fused: True`)
 - [x] **Phase 4:** `telemetry_logger_node`, 24-feature sliding-window `feature_extractor`, 16-episode dataset, RF (`F1=0.9426`, `AUC=0.9879`) & XGBoost (`F1=0.9369`, `AUC=0.9885`) trained and evaluated
-- [ ] **Phase 5:** Real-time AI Guardian failsafe node & zero-crash recovery demo
+- [x] **Phase 5:** Real-time `guardian_ai_node` automated MAVLink failover (`EKF2_GPS_CTRL=0`, `AUTO.LOITER`) verified with zero nominal false triggers across `step`, `drift`, and `takeover`
 - [ ] **Phase 6:** Automated ablation experiments & publication-grade paper figures

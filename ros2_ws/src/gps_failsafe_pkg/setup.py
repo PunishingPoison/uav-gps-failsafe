@@ -24,6 +24,7 @@ setup(
             'mission_runner_node = gps_failsafe_pkg.mission_runner_node:main',
             'adversary_spoofer_node = gps_failsafe_pkg.adversary_spoofer_node:main',
             'telemetry_logger_node = gps_failsafe_pkg.telemetry_logger_node:main',
+            'guardian_ai_node = gps_failsafe_pkg.guardian_ai_node:main',
         ],
     },
 )
