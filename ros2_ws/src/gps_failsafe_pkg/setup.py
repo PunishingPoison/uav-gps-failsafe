@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'sensor_bridge_node = gps_failsafe_pkg.sensor_bridge_node:main',
         ],
     },
 )

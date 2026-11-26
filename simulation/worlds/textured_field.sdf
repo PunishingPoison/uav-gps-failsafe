@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version="1.9">
+  <world name="textured_field">
+    <physics type="ode">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
+    </physics>
+
+    <plugin name="gz::sim::systems::Physics" filename="gz-sim-physics-system"/>
+    <plugin name="gz::sim::systems::UserCommands" filename="gz-sim-user-commands-system"/>
+    <plugin name="gz::sim::systems::SceneBroadcaster" filename="gz-sim-scene-broadcaster-system"/>
+    <plugin name="gz::sim::systems::Contact" filename="gz-sim-contact-system"/>
+    <plugin name="gz::sim::systems::Imu" filename="gz-sim-imu-system"/>
+    <plugin name="gz::sim::systems::AirPressure" filename="gz-sim-air-pressure-system"/>
+    <plugin name="gz::sim::systems::ApplyLinkWrench" filename="gz-sim-apply-link-wrench-system"/>
+    <plugin name="gz::sim::systems::NavSat" filename="gz-sim-navsat-system"/>
+    <plugin name="gz::sim::systems::Sensors" filename="gz-sim-sensors-system">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+
+    <gui fullscreen="false">
+      <plugin filename="MinimalScene" name="3D View">
+        <gz-gui>
+          <title>3D View</title>
+          <property type="bool" key="showTitleBar">false</property>
+          <property type="string" key="state">docked</property>
+        </gz-gui>
+        <engine>ogre2</engine>
+        <scene>scene</scene>
+        <ambient_light>0.45 0.45 0.45</ambient_light>
+        <background_color>0.72 0.80 0.88</background_color>
+        <camera_pose>-8 -8 7 0 0.55 0.78</camera_pose>
+        <camera_clip>
+          <near>0.25</near>
+          <far>25000</far>
+        </camera_clip>
+      </plugin>
+      <plugin filename="EntityContextMenuPlugin" name="Entity context menu">
+        <gz-gui>
+          <property key="state" type="string">floating</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="showTitleBar">false</property>
+        </gz-gui>
+      </plugin>
+      <plugin filename="GzSceneManager" name="Scene Manager">
+        <gz-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar">false</property>
+        </gz-gui>
+      </plugin>
+      <plugin filename="InteractiveViewControl" name="Interactive view control">
+        <gz-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar">false</property>
+        </gz-gui>
+      </plugin>
+      <plugin filename="CameraTracking" name="Camera Tracking">
+        <gz-gui>
+          <property key="resizable" type="bool">false</property>
+          <property key="width" type="double">5</property>
+          <property key="height" type="double">5</property>
+          <property key="state" type="string">floating</property>
+          <property key="showTitleBar">false</property>
+        </gz-gui>
+      </plugin>
+      <plugin filename="WorldControl" name="World control">
+        <gz-gui>
+          <title>World control</title>
+          <property type="bool" key="showTitleBar">0</property>
+          <property type="bool" key="resizable">0</property>
+          <property type="double" key="height">72</property>
+          <property type="double" key="width">121</property>
+          <property type="string" key="state">floating</property>
+        </gz-gui>
+        <play_pause>1</play_pause>
+        <step>1</step>
+        <start_paused>0</start_paused>
+      </plugin>
+      <plugin filename="WorldStats" name="World stats">
+        <gz-gui>
+          <title>World stats</title>
+          <property type="bool" key="showTitleBar">0</property>
+          <property type="bool" key="resizable">0</property>
+          <property type="double" key="height">110</property>
+          <property type="double" key="width">290</property>
+          <property type="string" key="state">floating</property>
+        </gz-gui>
+        <sim_time>1</sim_time>
+        <real_time>1</real_time>
+        <real_time_factor>1</real_time_factor>
+        <iterations>1</iterations>
+      </plugin>
+      <plugin filename="EntityTree" name="Entity tree"/>
+    </gui>
+
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type="adiabatic"/>
+
+    <scene>
+      <grid>false</grid>
+      <ambient>0.48 0.48 0.48 1</ambient>
+      <background>0.70 0.78 0.86 1</background>
+      <shadows>true</shadows>
+    </scene>
+
+    <light name="sunUTC" type="directional">
+      <pose>0 0 500 0 0 0</pose>
+      <cast_shadows>true</cast_shadows>
+      <intensity>1.0</intensity>
+      <direction>-0.25 0.35 -0.85</direction>
+      <diffuse>0.90 0.90 0.88 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>2000</range>
+        <linear>0</linear>
+        <constant>1</constant>
+        <quadratic>0</quadratic>
+      </attenuation>
+    </light>
+
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>47.397971057728974</latitude_deg>
+      <longitude_deg>8.546163739800146</longitude_deg>
+      <elevation>0</elevation>
+    </spherical_coordinates>
+
+    <!-- Main textured ground surface -->
+    <include>
+      <uri>model://textured_ground</uri>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+
+    <!-- Takeoff Origin Helipad -->
+    <model name="launch_helipad">
+      <static>true</static>
+      <pose>0 0 0.004 0 0 0</pose>
+      <link name="link">
+        <visual name="pad_base">
+          <geometry><box><size>2.2 2.2 0.006</size></box></geometry>
+          <material><ambient>0.18 0.19 0.21 1</ambient><diffuse>0.22 0.23 0.25 1</diffuse></material>
+        </visual>
+        <visual name="pad_ring">
+          <pose>0 0 0.004 0 0 0</pose>
+          <geometry><cylinder><radius>0.85</radius><length>0.003</length></cylinder></geometry>
+          <material><ambient>0.88 0.65 0.08 1</ambient><diffuse>0.92 0.68 0.10 1</diffuse></material>
+        </visual>
+        <visual name="pad_inner">
+          <pose>0 0 0.006 0 0 0</pose>
+          <geometry><cylinder><radius>0.72</radius><length>0.003</length></cylinder></geometry>
+          <material>
+            <ambient>0.35 0.35 0.35 1</ambient>
+            <diffuse>0.45 0.45 0.45 1</diffuse>
+            <pbr>
+              <metal>
+                <albedo_map>model://textured_ground/materials/textures/ground_albedo.png</albedo_map>
+                <roughness>0.95</roughness>
+              </metal>
+            </pbr>
+          </material>
+        </visual>
+        <visual name="h_left">
+          <pose>-0.25 0 0.008 0 0 0</pose>
+          <geometry><box><size>0.12 0.65 0.002</size></box></geometry>
+          <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material>
+        </visual>
+        <visual name="h_right">
+          <pose>0.25 0 0.008 0 0 0</pose>
+          <geometry><box><size>0.12 0.65 0.002</size></box></geometry>
+          <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material>
+        </visual>
+        <visual name="h_bar">
+          <pose>0 0 0.008 0 0 0</pose>
+          <geometry><box><size>0.50 0.12 0.002</size></box></geometry>
+          <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Visual perimeter markers for flight box reference -->
+    <model name="marker_ne">
+      <static>true</static>
+      <pose>12 12 0.5 0 0 0</pose>
+      <link name="link">
+        <visual name="v"><geometry><box><size>0.8 0.8 1.0</size></box></geometry>
+          <material><ambient>0.85 0.25 0.15 1</ambient><diffuse>0.90 0.25 0.15 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="marker_nw">
+      <static>true</static>
+      <pose>-12 12 0.5 0 0 0</pose>
+      <link name="link">
+        <visual name="v"><geometry><box><size>0.8 0.8 1.0</size></box></geometry>
+          <material><ambient>0.15 0.55 0.85 1</ambient><diffuse>0.15 0.60 0.90 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="marker_se">
+      <static>true</static>
+      <pose>12 -12 0.5 0 0 0</pose>
+      <link name="link">
+        <visual name="v"><geometry><box><size>0.8 0.8 1.0</size></box></geometry>
+          <material><ambient>0.20 0.75 0.35 1</ambient><diffuse>0.20 0.80 0.35 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+    <model name="marker_sw">
+      <static>true</static>
+      <pose>-12 -12 0.5 0 0 0</pose>
+      <link name="link">
+        <visual name="v"><geometry><box><size>0.8 0.8 1.0</size></box></geometry>
+          <material><ambient>0.85 0.75 0.15 1</ambient><diffuse>0.90 0.80 0.15 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>
