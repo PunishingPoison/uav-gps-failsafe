@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+
+# ROS 2 build artifacts
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# Large simulation logs and datasets (keep folder structure via .gitkeep)
+data/raw/*.csv
+data/raw/*.ulg
+data/processed/*.csv
+data/processed/*.parquet
+logs/
+*.log
+
+# Trained model binaries (reproducible via ml/train_models.py)
+ml/models/*.joblib
+ml/models/*.pkl
+ml/models/*.json
+
+# OS / Editor
+.DS_Store
+*.swp
+.vscode/
+.idea/
