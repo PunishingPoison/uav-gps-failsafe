@@ -868,3 +868,102 @@ figcaption {
   font-size: 0.75rem;
   color: var(--ink-muted);
 }
+
+/* Interactive Full-Dataset Explorer */
+.ds-toolbar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  background: var(--bg-inset);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.ds-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ds-field label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+
+.ds-input,
+.ds-select {
+  width: 100%;
+  background: var(--bg-paper);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 6px 9px;
+  font-family: var(--font-sans);
+  font-size: 0.83rem;
+}
+
+.ds-meta-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 0.83rem;
+  color: var(--ink-muted);
+}
+
+.ds-scroll-wrap {
+  max-height: 500px;
+  overflow: auto;
+  background: var(--bg-paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+}
+
+.ds-scroll-wrap table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg-inset);
+}
+
+.ds-scroll-wrap table td {
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.77rem;
+  padding: 6px 10px;
+}
+
+.ds-pager {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.ds-schema-box {
+  background: var(--bg-paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  font-family: var(--font-mono);
+  font-size: 0.77rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 860px) {
+  .ds-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 520px) {
+  .ds-toolbar { grid-template-columns: 1fr; }
+}

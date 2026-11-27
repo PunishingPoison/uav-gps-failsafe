@@ -160,10 +160,15 @@ export const DATASET_SUMMARY = {
   totalFeatureWindows: 7621,
   trainRows: 5694,
   testRows: 1927,
-  rawColumnsCount: 74,
+  rawColumnsCount: 76,
   featureColumnsCount: 24,
   leakagePolicy: "Episode-level strict separation + airborne_only=True; zero gt_* or spoof_* columns read during feature extraction.",
 };
+
+export const DATASET_SOURCES = [
+  { id: "processed:features_dataset.csv", group: "Processed ML Matrix", label: "features_dataset.csv (7,621 rows x 42 cols)", url: "assets/data/processed/features_dataset.csv" },
+  { id: "experiments:experiment_metrics.csv", group: "Ablation Summary", label: "experiment_metrics.csv (10 runs x 25 cols)", url: "assets/data/experiments/experiment_metrics.csv" },
+];
 
 export const DATASET_EPISODES = [
   { id: "ep_nom_01_hover", split: "train", mode: "none", pattern: "hover", speed: "1.5 m/s", params: "No spoofing (baseline)", lines: 572 },

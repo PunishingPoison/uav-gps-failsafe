@@ -2,6 +2,7 @@ import {
   ABLATION_RUNS,
   CODE_MODULES,
   DATASET_EPISODES,
+  DATASET_SOURCES,
   DATASET_SUMMARY,
   FEATURE_GROUPS,
   IEEE_REFERENCES,
@@ -204,8 +205,33 @@ function renderAiAndCode() {
       <td class="mono">${esc(e.speed)}</td>
       <td>${esc(e.params)}</td>
       <td class="mono">${esc(e.lines)}</td>
+      <td style="white-space:nowrap;">
+        <button type="button" class="lb-btn" data-load-csv="assets/data/raw/${esc(e.id)}.csv" data-load-label="raw / ${esc(e.id)}.csv">Browse Rows</button>
+        <a class="lb-btn" href="assets/data/raw/${esc(e.id)}.csv" download style="text-decoration:none;">CSV</a>
+      </td>
     </tr>`
   ).join("");
+
+  const expDatasetRows = ABLATION_RUNS.map(
+    (r) => `
+    <tr>
+      <td class="mono">${esc(r.runId)}.csv</td>
+      <td>${esc(r.mode)}</td>
+      <td><span class="badge ${r.guardian ? "badge-emerald" : "badge-carmine"}">${r.guardian ? "ON" : "OFF"}</span></td>
+      <td class="mono">${esc(r.hijackRmse)}</td>
+      <td class="mono">${esc(r.maxErr)}</td>
+      <td style="white-space:nowrap;">
+        <button type="button" class="lb-btn" data-load-csv="assets/data/experiments/${esc(r.runId)}.csv" data-load-label="experiments / ${esc(r.runId)}.csv">Browse Rows</button>
+        <a class="lb-btn" href="assets/data/experiments/${esc(r.runId)}.csv" download style="text-decoration:none;">CSV</a>
+      </td>
+    </tr>`
+  ).join("");
+
+  const sourceOptions = [
+    ...DATASET_SOURCES.map((s) => `<option value="${esc(s.url)}">${esc(s.group)}: ${esc(s.label)}</option>`),
+    ...DATASET_EPISODES.map((e) => `<option value="assets/data/raw/${esc(e.id)}.csv">Raw Episode: ${esc(e.id)}.csv (${e.lines} lines x 76 cols)</option>`),
+    ...ABLATION_RUNS.map((r) => `<option value="assets/data/experiments/${esc(r.runId)}.csv">Ablation Flight: ${esc(r.runId)}.csv</option>`),
+  ].join("");
 
   const featureGroupsHtml = FEATURE_GROUPS.map(
     (grp) => `
@@ -285,14 +311,93 @@ function renderAiAndCode() {
     <div id="sub-dataset" class="subview">
       <div class="inset-panel">
         <strong>Dataset Collection Protocol (<code>ml/collect_dataset.py</code>):</strong>
-        Each episode boots an isolated headless PX4 + Gazebo instance, records <strong>74 raw telemetry columns at 20 Hz</strong> via <code>telemetry_logger_node</code>, and logs <code>data/raw/dataset_manifest.json</code>. Strict <strong>episode-level train/test splitting</strong> ensures zero sliding-window overlap between the 12 training episodes (<strong>${DATASET_SUMMARY.trainRows}</strong> airborne windows) and 4 held-out test episodes (<strong>${DATASET_SUMMARY.testRows}</strong> airborne windows). Total dataset: <strong>${DATASET_SUMMARY.totalFeatureWindows} windows &times; 24 features</strong>.
+        Each episode boots an isolated headless PX4 + Gazebo instance, records <strong>76 raw telemetry columns at 20 Hz</strong> via <code>telemetry_logger_node</code>, and writes <code>data/raw/dataset_manifest.json</code>. Strict <strong>episode-level train/test splitting</strong> isolates the 12 training episodes (<strong>${DATASET_SUMMARY.trainRows}</strong> airborne windows) from 4 held-out test episodes (<strong>${DATASET_SUMMARY.testRows}</strong> airborne windows). Every row of the processed dataset (<strong>${DATASET_SUMMARY.totalFeatureWindows} windows &times; 42 columns</strong>), all <strong>16 raw CSVs</strong>, and all <strong>10 ablation CSVs</strong> can be inspected or downloaded below.
       </div>
+
+      <h3 class="subhead" style="margin-top:0;">Interactive Full-Dataset Browser (All Rows &amp; Columns)</h3>
+      <div class="ds-toolbar">
+        <div class="ds-field" style="grid-column: span 2;">
+          <label for="ds-source-select">Active Dataset CSV</label>
+          <select id="ds-source-select" class="ds-select">${sourceOptions}</select>
+        </div>
+        <div class="ds-field">
+          <label for="ds-episode-filter">Filter by Episode</label>
+          <select id="ds-episode-filter" class="ds-select"><option value="all">All Episodes</option></select>
+        </div>
+        <div class="ds-field">
+          <label for="ds-label-filter">Filter by Spoof Label</label>
+          <select id="ds-label-filter" class="ds-select">
+            <option value="all">All Rows (Nominal + Spoofed)</option>
+            <option value="0">Nominal Only (spoof_active = 0)</option>
+            <option value="1">Spoofed Only (spoof_active = 1)</option>
+          </select>
+        </div>
+        <div class="ds-field" style="grid-column: span 2;">
+          <label for="ds-search-input">Search Any Value (mode, phase, episode, etc.)</label>
+          <input id="ds-search-input" class="ds-input" type="search" placeholder="Type to filter rows (e.g. drift, takeover, OFFBOARD)...">
+        </div>
+        <div class="ds-field">
+          <label for="ds-page-size">Rows Per Page</label>
+          <select id="ds-page-size" class="ds-select">
+            <option value="25">25 rows / page</option>
+            <option value="50" selected>50 rows / page</option>
+            <option value="100">100 rows / page</option>
+            <option value="250">250 rows / page</option>
+          </select>
+        </div>
+        <div class="ds-field" style="justify-content:flex-end;">
+          <label>Actions</label>
+          <div style="display:flex;gap:8px;">
+            <button type="button" id="ds-toggle-schema" class="lb-btn" style="flex:1;">Columns Schema</button>
+            <a id="ds-download-link" class="lb-btn" href="assets/data/processed/features_dataset.csv" download style="text-decoration:none;text-align:center;flex:1;">Download CSV</a>
+          </div>
+        </div>
+      </div>
+
+      <div id="ds-schema-box" class="ds-schema-box" style="display:none;"></div>
+
+      <div class="ds-meta-bar">
+        <span id="ds-stats-text">Loading full dataset CSV...</span>
+        <span id="ds-split-pills"></span>
+      </div>
+
+      <div class="ds-scroll-wrap">
+        <table id="ds-table">
+          <thead id="ds-thead"></thead>
+          <tbody id="ds-tbody"><tr><td style="padding:16px;">Loading dataset rows...</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="ds-pager">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button type="button" id="ds-prev-page" class="pager-btn" style="padding:6px 12px;">Previous Page</button>
+          <span id="ds-page-info" class="mono">Page 1 / 1</span>
+          <button type="button" id="ds-next-page" class="pager-btn" style="padding:6px 12px;">Next Page</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span style="font-size:0.82rem;color:var(--ink-muted);">Manifests:</span>
+          <a class="lb-btn" href="assets/data/raw/dataset_manifest.json" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">dataset_manifest.json</a>
+          <a class="lb-btn" href="assets/data/experiments/experiments_manifest.json" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">experiments_manifest.json</a>
+        </div>
+      </div>
+
+      <h3 class="subhead">16 Raw SITL Collection Episodes (data/raw/*.csv — 76 Columns @ 20 Hz)</h3>
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Episode ID</th><th>Split</th><th>Attack Mode</th><th>Flight Pattern</th><th>Speed</th><th>Parameters</th><th>CSV Lines</th></tr>
+            <tr><th>Episode ID</th><th>Split</th><th>Attack Mode</th><th>Flight Pattern</th><th>Speed</th><th>Parameters</th><th>CSV Lines</th><th>Inspect / Download</th></tr>
           </thead>
           <tbody>${episodeRows}</tbody>
+        </table>
+      </div>
+
+      <h3 class="subhead">10 Paired Ablation Experiment CSVs (data/experiments/*.csv — 76 Columns)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>CSV File</th><th>Scenario</th><th>Guardian</th><th>Hijack RMSE</th><th>Peak Err</th><th>Inspect / Download</th></tr>
+          </thead>
+          <tbody>${expDatasetRows}</tbody>
         </table>
       </div>
     </div>
@@ -741,11 +846,213 @@ function bindLightboxEvents() {
   });
 }
 
+// --- Full Interactive CSV Dataset Explorer ---
+const dsCache = new Map();
+const dsState = {
+  url: DATASET_SOURCES[0].url,
+  headers: [],
+  rows: [],
+  filtered: [],
+  page: 1,
+  pageSize: 50,
+  loadedOnce: false,
+};
+
+function parseCsvText(text) {
+  const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").filter((l) => l.length > 0);
+  if (!lines.length) return { headers: [], rows: [] };
+  const splitRow = (line) => {
+    if (!line.includes('"')) return line.split(",");
+    const out = [];
+    let cur = "", inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
+        else { inQ = !inQ; }
+      } else if (ch === "," && !inQ) {
+        out.push(cur); cur = "";
+      } else {
+        cur += ch;
+      }
+    }
+    out.push(cur);
+    return out;
+  };
+  const headers = splitRow(lines[0]);
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const vals = splitRow(lines[i]);
+    if (vals.length === headers.length) rows.push(vals);
+  }
+  return { headers, rows };
+}
+
+function formatCell(val) {
+  if (val === "" || val === undefined || val === null) return "";
+  if (/^-?\d+\.\d{5,}$/.test(val)) {
+    const num = Number(val);
+    if (Number.isFinite(num)) return Math.abs(num) >= 1000 || Math.abs(num) < 1e-4 ? num.toExponential(3) : num.toFixed(4);
+  }
+  return val;
+}
+
+function applyDatasetFilters(resetPage = true) {
+  const epSel = document.getElementById("ds-episode-filter");
+  const lblSel = document.getElementById("ds-label-filter");
+  const searchEl = document.getElementById("ds-search-input");
+  const epVal = epSel ? epSel.value : "all";
+  const lblVal = lblSel ? lblSel.value : "all";
+  const q = searchEl ? searchEl.value.trim().toLowerCase() : "";
+
+  const epIdx = dsState.headers.indexOf("episode_id");
+  const lblIdx = dsState.headers.indexOf("spoof_active");
+
+  dsState.filtered = dsState.rows.filter((r) => {
+    if (epIdx >= 0 && epVal !== "all" && r[epIdx] !== epVal) return false;
+    if (lblIdx >= 0 && lblVal !== "all" && r[lblIdx] !== lblVal) return false;
+    if (q) {
+      let matched = false;
+      for (let i = 0; i < r.length; i++) {
+        if (r[i].toLowerCase().includes(q)) { matched = true; break; }
+      }
+      if (!matched) return false;
+    }
+    return true;
+  });
+
+  if (resetPage) dsState.page = 1;
+  renderDatasetPage();
+}
+
+function renderDatasetPage() {
+  const thead = document.getElementById("ds-thead");
+  const tbody = document.getElementById("ds-tbody");
+  const stats = document.getElementById("ds-stats-text");
+  const pills = document.getElementById("ds-split-pills");
+  const pageInfo = document.getElementById("ds-page-info");
+  const prevBtn = document.getElementById("ds-prev-page");
+  const nextBtn = document.getElementById("ds-next-page");
+  if (!thead || !tbody) return;
+
+  const total = dsState.filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / dsState.pageSize));
+  dsState.page = Math.min(Math.max(1, dsState.page), totalPages);
+  const startIdx = (dsState.page - 1) * dsState.pageSize;
+  const endIdx = Math.min(total, startIdx + dsState.pageSize);
+  const slice = dsState.filtered.slice(startIdx, endIdx);
+
+  thead.innerHTML = `<tr><th>#</th>${dsState.headers.map((h) => `<th>${esc(h)}</th>`).join("")}</tr>`;
+  if (!slice.length) {
+    tbody.innerHTML = `<tr><td colspan="${dsState.headers.length + 1}" style="padding:16px;">No rows match the selected filters.</td></tr>`;
+  } else {
+    tbody.innerHTML = slice
+      .map((row, idx) => {
+        const rowNum = startIdx + idx + 1;
+        return `<tr><td>${rowNum}</td>${row.map((cell) => `<td>${esc(formatCell(cell))}</td>`).join("")}</tr>`;
+      })
+      .join("");
+  }
+
+  const lblIdx = dsState.headers.indexOf("spoof_active");
+  let nomCount = 0, spoofCount = 0;
+  if (lblIdx >= 0) {
+    for (const r of dsState.filtered) {
+      if (r[lblIdx] === "1" || r[lblIdx] === "1.0") spoofCount++;
+      else nomCount++;
+    }
+  }
+  if (stats) {
+    stats.textContent = `Showing rows ${total ? startIdx + 1 : 0}-${endIdx} of ${total.toLocaleString()} matching (${dsState.rows.length.toLocaleString()} total rows x ${dsState.headers.length} columns)`;
+  }
+  if (pills) {
+    pills.innerHTML = lblIdx >= 0
+      ? `<span class="badge badge-emerald">Nominal: ${nomCount.toLocaleString()}</span> <span class="badge badge-carmine">Spoofed: ${spoofCount.toLocaleString()}</span>`
+      : `<span class="badge badge-cobalt">Columns: ${dsState.headers.length}</span>`;
+  }
+  if (pageInfo) pageInfo.textContent = `Page ${dsState.page} / ${totalPages}`;
+  if (prevBtn) prevBtn.disabled = dsState.page <= 1;
+  if (nextBtn) nextBtn.disabled = dsState.page >= totalPages;
+}
+
+async function loadDatasetUrl(url) {
+  const tbody = document.getElementById("ds-tbody");
+  const stats = document.getElementById("ds-stats-text");
+  const dl = document.getElementById("ds-download-link");
+  const sel = document.getElementById("ds-source-select");
+  const epSel = document.getElementById("ds-episode-filter");
+  const schemaBox = document.getElementById("ds-schema-box");
+
+  dsState.url = url;
+  dsState.loadedOnce = true;
+  if (sel && sel.value !== url) sel.value = url;
+  if (dl) dl.href = url;
+  if (stats) stats.textContent = `Loading ${url.split("/").pop()}...`;
+  if (tbody) tbody.innerHTML = `<tr><td style="padding:16px;">Loading dataset rows...</td></tr>`;
+
+  try {
+    let parsed = dsCache.get(url);
+    if (!parsed) {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const txt = await resp.text();
+      parsed = parseCsvText(txt);
+      dsCache.set(url, parsed);
+    }
+    dsState.headers = parsed.headers;
+    dsState.rows = parsed.rows;
+
+    if (schemaBox) {
+      schemaBox.innerHTML = `<strong>Schema (${parsed.headers.length} columns):</strong> ${parsed.headers.map((h) => `<code>${esc(h)}</code>`).join(" ")}`;
+    }
+    if (epSel) {
+      const epIdx = parsed.headers.indexOf("episode_id");
+      if (epIdx >= 0) {
+        const eps = [...new Set(parsed.rows.map((r) => r[epIdx]))].sort();
+        epSel.innerHTML = `<option value="all">All Episodes (${eps.length})</option>` + eps.map((ep) => `<option value="${esc(ep)}">${esc(ep)}</option>`).join("");
+        epSel.disabled = false;
+      } else {
+        epSel.innerHTML = `<option value="all">N/A (Summary Table)</option>`;
+        epSel.disabled = true;
+      }
+    }
+    applyDatasetFilters(true);
+  } catch (err) {
+    if (tbody) tbody.innerHTML = `<tr><td style="padding:16px;color:var(--carmine);">Failed to load dataset (${esc(err.message)}).</td></tr>`;
+  }
+}
+
+function bindDatasetExplorer() {
+  document.getElementById("ds-source-select")?.addEventListener("change", (e) => loadDatasetUrl(e.target.value));
+  document.getElementById("ds-episode-filter")?.addEventListener("change", () => applyDatasetFilters(true));
+  document.getElementById("ds-label-filter")?.addEventListener("change", () => applyDatasetFilters(true));
+  document.getElementById("ds-search-input")?.addEventListener("input", () => applyDatasetFilters(true));
+  document.getElementById("ds-page-size")?.addEventListener("change", (e) => {
+    dsState.pageSize = Number(e.target.value) || 50;
+    dsState.page = 1;
+    renderDatasetPage();
+  });
+  document.getElementById("ds-prev-page")?.addEventListener("click", () => {
+    if (dsState.page > 1) { dsState.page--; renderDatasetPage(); }
+  });
+  document.getElementById("ds-next-page")?.addEventListener("click", () => {
+    const totalPages = Math.max(1, Math.ceil(dsState.filtered.length / dsState.pageSize));
+    if (dsState.page < totalPages) { dsState.page++; renderDatasetPage(); }
+  });
+  document.getElementById("ds-toggle-schema")?.addEventListener("click", () => {
+    const box = document.getElementById("ds-schema-box");
+    if (box) box.style.display = box.style.display === "none" ? "block" : "none";
+  });
+}
+
 function bindEvents() {
   document.addEventListener("click", (e) => {
     const tabBtn = e.target.closest("[data-tab]");
     if (tabBtn) {
       activateTab(tabBtn.dataset.tab);
+      if (resolveTabId(tabBtn.dataset.tab) === "ai" && !dsState.loadedOnce) {
+        loadDatasetUrl(dsState.url);
+      }
       return;
     }
 
@@ -759,6 +1066,17 @@ function bindEvents() {
     const jumpBtn = e.target.closest("[data-jump]");
     if (jumpBtn) {
       activateTab(jumpBtn.dataset.jump);
+      if (resolveTabId(jumpBtn.dataset.jump) === "ai" && !dsState.loadedOnce) {
+        loadDatasetUrl(dsState.url);
+      }
+      return;
+    }
+
+    const loadBtn = e.target.closest("[data-load-csv]");
+    if (loadBtn) {
+      const targetUrl = loadBtn.dataset.loadCsv;
+      loadDatasetUrl(targetUrl);
+      document.getElementById("ds-source-select")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
@@ -770,6 +1088,9 @@ function bindEvents() {
       document.querySelectorAll(".subview").forEach((v) => {
         v.style.display = v.id === target ? "block" : "none";
       });
+      if (target === "sub-dataset" && !dsState.loadedOnce) {
+        loadDatasetUrl(dsState.url);
+      }
       return;
     }
 
@@ -786,12 +1107,21 @@ function bindEvents() {
 
   window.addEventListener("hashchange", () => {
     const hash = window.location.hash.replace("#", "");
-    if (hash) activateTab(hash, false);
+    if (hash) {
+      activateTab(hash, false);
+      if (resolveTabId(hash) === "ai" && !dsState.loadedOnce) {
+        loadDatasetUrl(dsState.url);
+      }
+    }
   });
 }
 
 mountAllPanels();
 bindEvents();
 bindLightboxEvents();
+bindDatasetExplorer();
 const initial = window.location.hash.replace("#", "") || "overview";
 activateTab(initial, false);
+if (resolveTabId(initial) === "ai") {
+  loadDatasetUrl(dsState.url);
+}
