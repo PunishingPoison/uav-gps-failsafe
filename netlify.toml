@@ -1,0 +1,49 @@
+[build]
+  publish = "web"
+
+[[headers]]
+  for = "/assets/data/*.csv"
+  [headers.values]
+    Content-Type = "text/csv; charset=utf-8"
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/assets/data/*.json"
+  [headers.values]
+    Content-Type = "application/json; charset=utf-8"
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/assets/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[redirects]]
+  from = "/overview"
+  to = "/#overview"
+  status = 301
+
+[[redirects]]
+  from = "/architecture"
+  to = "/#architecture"
+  status = 301
+
+[[redirects]]
+  from = "/ai"
+  to = "/#ai"
+  status = 301
+
+[[redirects]]
+  from = "/datasets"
+  to = "/#datasets"
+  status = 301
+
+[[redirects]]
+  from = "/simulation"
+  to = "/#simulation"
+  status = 301
+
+[[redirects]]
+  from = "/research"
+  to = "/#research"
+  status = 301

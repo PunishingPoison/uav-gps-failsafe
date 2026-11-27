@@ -22,7 +22,7 @@ uav-gps-failsafe/
 ├── ml/                                # Training & evaluation scripts + saved .joblib models
 ├── analysis/                          # Experiment evaluation (latency, RMSE, drift) and paper figure plotting
 ├── data/                              # Raw & processed flight telemetry datasets
-└── web/                               # Vercel-ready static project portal (architecture, AI, datasets, results, research)
+└── web/                               # Netlify-ready static project portal (architecture, AI, datasets, results, research)
 ```
 
 ## Quick Verification & Usage (Phases 1–3)
@@ -92,8 +92,8 @@ docker run --rm -v "$PWD:/uav_ws" uav-gps-failsafe:jazzy bash -c '
 ./scripts/run_demo.sh --guardian off
 ./scripts/run_demo.sh --guardian on
 ```
-8. **Project Technical Website (`web/`, Vercel-ready):**
-- Root `vercel.json` points Vercel directly to `web/` (`outputDirectory: "web"`). Run locally with:
+8. **Project Technical Website (`web/`, Netlify-ready):**
+- Root `netlify.toml` sets `publish = "web"` for zero-build deployment when connecting the repository to Netlify (or drag-and-drop `web/` on Netlify Drop). Run locally with:
 ```bash
 python3 -m http.server 8080 --directory web
 ```
