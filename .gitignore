@@ -11,13 +11,7 @@ ros2_ws/build/
 ros2_ws/install/
 ros2_ws/log/
 
-# Large simulation logs and datasets (keep folder structure via .gitkeep)
-data/raw/*.csv
-data/raw/*.ulg
-data/experiments/*.csv
-data/experiments/*.ulg
-data/processed/*.csv
-data/processed/*.parquet
+# Runtime logs
 logs/
 *.log
 
